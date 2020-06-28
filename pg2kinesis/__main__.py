@@ -19,6 +19,7 @@ SUPPORTED_OPERATIONS = ['update', 'insert', 'delete', 'truncate']
               help='Postgres server location. Leave empty if localhost.')
 @click.option('--pg-port', '-p', default='5432', help='Postgres port.')
 @click.option('--pg-user', '-u', help='Postgres user')
+@click.option('--pg-pwd', help='Pg Password')
 @click.option('--pg-sslmode', help='Postgres SSL mode', default='prefer')
 @click.option('--pg-slot-name', '-s', default='pg2kinesis',
               help='Postgres replication slot name.')
@@ -39,7 +40,7 @@ SUPPORTED_OPERATIONS = ['update', 'insert', 'delete', 'truncate']
               help='Deletes the slot on start if it exists and then creates.')
 @click.option('--operations', default='all', type=click.Choice(['all'] + SUPPORTED_OPERATIONS),
               multiple=True, help = 'Which operations to replicate to kinesis, Default: all')
-def main(pg_dbname, pg_host, pg_port, pg_user, pg_sslmode, pg_slot_name, pg_slot_output_plugin,
+def main(pg_dbname, pg_host, pg_port, pg_user, pg_pwd, pg_sslmode, pg_slot_name, pg_slot_output_plugin,
          stream_name, message_formatter, table_pat, operations, full_change, create_slot, recreate_slot):
     if 'all' in operations:
         operations = SUPPORTED_OPERATIONS
@@ -52,7 +53,7 @@ def main(pg_dbname, pg_host, pg_port, pg_user, pg_sslmode, pg_slot_name, pg_slot
     logger.info('Getting kinesis stream writer')
     writer = StreamWriter(stream_name)
 
-    with SlotReader(pg_dbname, pg_host, pg_port, pg_user, pg_sslmode, pg_slot_name,
+    with SlotReader(pg_dbname, pg_host, pg_port, pg_user, pg_pwd, pg_sslmode, pg_slot_name,
                     pg_slot_output_plugin) as reader:
 
         if recreate_slot:
