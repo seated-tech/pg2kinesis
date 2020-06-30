@@ -25,7 +25,6 @@ class Consume:
         self.msg_window_count += 1
 
         fmt_msgs = self.formatter(change.payload)
-
         xid_msg = 'xid: {:12}'
         win_msg = 'win_count:{:>10} win_size:{:>10}mb'
         cum_msg = 'cum_count:{:>10} cum_size:{:>10}mb'
@@ -36,7 +35,6 @@ class Consume:
                 # MAIN LINE HERE -- WORKS WITH ANY KINESIS PRODUCER
                 # ALSO, NOT FMT_MSG...NEEDS TO BE BINARY
                 stream_msg = json.dumps(fmt_msg.change.change)
-                print(stream_msg)
                 self.writer.put(stream_msg)
                 change.cursor.send_feedback(flush_lsn=change.data_start)
                 logging.info('Flushed LSN: {}'.format(change.data_start))
