@@ -3,8 +3,7 @@ from __future__ import unicode_literals
 import json
 import re
 import sys
-
-from .log import logger
+import logging
 
 from collections import namedtuple
 
@@ -133,7 +132,7 @@ class Formatter(object):
 
     @staticmethod
     def _log_and_raise(msg):
-        logger.error(msg)
+        logging.error(msg)
         raise Exception(msg)
 
     def __call__(self, change):

@@ -1,9 +1,9 @@
 import time
 import aws_kinesis_agg.aggregator
 import boto3
+import logging
 
 from botocore.exceptions import ClientError
-from .log import logger
 
 class StreamWriter(object):
     def __init__(self, stream_name, back_off_limit=60, send_window=13):
@@ -21,7 +21,7 @@ class StreamWriter(object):
         except ClientError as e:
             # ResourceInUseException is raised when the stream already exists
             if e.response['Error']['Code'] != 'ResourceInUseException':
-                logger.error(e)
+                logging.error(e)
                 raise
 
         waiter = self._kinesis.get_waiter('stream_exists')
@@ -48,7 +48,7 @@ class StreamWriter(object):
             return
 
         pk, _, data = agg_record.get_contents()
-        logger.info('Sending %s records. Size %s. PK: %s' %
+        logging.info('Sending %s records. Size %s. PK: %s' %
                     (agg_record.get_num_user_records(), agg_record.get_size_bytes(), pk))
 
         back_off = .05
@@ -62,13 +62,13 @@ class StreamWriter(object):
             except ClientError as e:
                 if e.response['Error']["Code"] == 'ProvisionedThroughputExceededException':
                     back_off *= 2
-                    logger.warning('Provisioned throughput exceeded: sleeping %ss' % back_off)
+                    logging.warning('Provisioned throughput exceeded: sleeping %ss' % back_off)
                     time.sleep(back_off)
                 else:
-                    logger.error(e)
+                    logging.error(e)
                     raise
             else:
-                logger.debug('Sequence number: %s' % result['SequenceNumber'])
+                logging.debug('Sequence number: %s' % result['SequenceNumber'])
                 break
         else:
             raise Exception('ProvisionedThroughputExceededException caused a backed off too many times!')

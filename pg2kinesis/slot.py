@@ -1,12 +1,11 @@
 from collections import namedtuple
+import logging
 import threading
 
 import psycopg2
 import psycopg2.extras
 import psycopg2.extensions
 import psycopg2.errorcodes
-
-from .log import logger
 
 psycopg2.extensions.register_type(psycopg2.extensions.UNICODE, None)
 psycopg2.extensions.register_type(psycopg2.extensions.UNICODEARRAY, None)
@@ -87,14 +86,14 @@ class SlotReader(object):
 
     @property
     def primary_key_map(self):
-        logger.info('Getting primary key map')
+        logging.info('Getting primary key map')
         result = map(PrimaryKeyMapItem._make, self._execute_and_fetch(SlotReader.PK_SQL))
         pk_map = {rec.table_name: rec for rec in result}
 
         return pk_map
 
     def create_slot(self):
-        logger.info('Creating slot %s' % self.slot_name)
+        logging.info('Creating slot %s' % self.slot_name)
         try:
             self._repl_cursor.create_replication_slot(self.slot_name,
                                                       slot_type=psycopg2.extras.REPLICATION_LOGICAL,
@@ -102,25 +101,25 @@ class SlotReader(object):
         except psycopg2.ProgrammingError as p:
             # Will be raised if slot exists already.
             if p.pgcode != psycopg2.errorcodes.DUPLICATE_OBJECT:
-                logger.error(p)
+                logging.error(p)
                 raise
             else:
-                logger.info('Slot %s is already present.' % self.slot_name)
+                logging.info('Slot %s is already present.' % self.slot_name)
 
     def delete_slot(self):
-        logger.info('Deleting slot %s' % self.slot_name)
+        logging.info('Deleting slot %s' % self.slot_name)
         try:
             self._repl_cursor.drop_replication_slot(self.slot_name)
         except psycopg2.ProgrammingError as p:
             # Will be raised if slot exists already.
             if p.pgcode != psycopg2.errorcodes.UNDEFINED_OBJECT:
-                logger.error(p)
+                logging.error(p)
                 raise
             else:
-                logger.info('Slot %s was not found.' % self.slot_name)
+                logging.info('Slot %s was not found.' % self.slot_name)
 
     def process_replication_stream(self, consume):
-        logger.info('Starting the consumption of slot "%s"!' % self.slot_name)
+        logging.info('Starting the consumption of slot "%s"!' % self.slot_name)
         if self.output_plugin == 'wal2json':
             options = {'include-xids': 1}
         else:
