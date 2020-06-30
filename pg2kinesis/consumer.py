@@ -1,6 +1,6 @@
 import time
 import logging
-
+import json
 
 class Consume:
     def __init__(self, formatter, writer, filter_operations):
@@ -32,11 +32,12 @@ class Consume:
         progress_msg = f'{xid_msg} {win_msg} {cum_msg}'
 
         for fmt_msg in fmt_msgs:
-            if not self.should_send_to_kinesis(fmt_msg):
-                fmt_msg = None
-
-            did_put = self.writer.put_message(fmt_msg)
-            if did_put:
+            if self.should_send_to_kinesis(fmt_msg):
+                # MAIN LINE HERE -- WORKS WITH ANY KINESIS PRODUCER
+                # ALSO, NOT FMT_MSG...NEEDS TO BE BINARY
+                stream_msg = json.dumps(fmt_msg.change.change)
+                print(stream_msg)
+                self.writer.put(stream_msg)
                 change.cursor.send_feedback(flush_lsn=change.data_start)
                 logging.info('Flushed LSN: {}'.format(change.data_start))
 

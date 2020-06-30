@@ -151,6 +151,7 @@ class CSVFormatter(Formatter):
     def produce_formatted_message(self, change):
         fmt_msg = '{},{},{},{},{},{}'.format(CSVFormatter.VERSION,
                                              CSVFormatter.TYPE, *change)
+        fmt_msg = fmt_msg.encode()
         return Message(change=change, fmt_msg=fmt_msg)
 
 
@@ -159,6 +160,7 @@ class CSVPayloadFormatter(Formatter):
     def produce_formatted_message(self, change):
         fmt_msg = '{},{},{}'.format(CSVFormatter.VERSION, CSVFormatter.TYPE,
                                     json.dumps(change._asdict()))
+        fmt_msg = fmt_msg.encode()
         return Message(change=change, fmt_msg=fmt_msg)
 
 

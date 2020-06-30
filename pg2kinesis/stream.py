@@ -29,7 +29,7 @@ class StreamWriter(object):
         # waits up to 180 seconds for stream to exist
         waiter.wait(StreamName=self.stream_name)
 
-    def put_message(self, fmt_msg):
+    def put(self, fmt_msg):
         agg_record = None
 
         if fmt_msg:
