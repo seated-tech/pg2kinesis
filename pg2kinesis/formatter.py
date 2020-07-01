@@ -10,7 +10,7 @@ from collections import namedtuple
 # Tuples representing changes as pulled from database
 Change = namedtuple('Change', 'xid, table, operation, pkey')
 FullChange = namedtuple('FullChange', 'xid, change')
-FullChange.operation = property(lambda self: self.change.get('kind'))
+FullChange.operation = property(lambda self: self.change["row"].get('kind'))
 
 # Final product of Formatter, a Change and the Change formatted.
 Message = namedtuple('Message', 'change, fmt_msg')
@@ -114,7 +114,11 @@ class Formatter(object):
             schema = change['schema']
             if self.table_re.search(table_name):
                 if self.full_change:
-                    changes.append(FullChange(xid=self.cur_xact, change=change))
+                    d = {}
+                    d["xid"] = self.cur_xact
+                    d["timestamp"] = change_dictionary["timestamp"]
+                    d["row"] = change
+                    changes.append(FullChange(xid=self.cur_xact, change=d))
                 else:
                     try:
                         full_table = '{}.{}'.format(schema, table_name)
