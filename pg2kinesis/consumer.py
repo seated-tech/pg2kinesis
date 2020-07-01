@@ -34,8 +34,9 @@ class Consume:
             if self.should_send_to_kinesis(fmt_msg):
                 # MAIN LINE HERE -- WORKS WITH ANY KINESIS PRODUCER
                 # ALSO, NOT FMT_MSG...NEEDS TO BE BINARY
-                stream_msg = json.dumps(fmt_msg.change.change)
-                self.writer.put(stream_msg)
+                stream_msg = fmt_msg.change.change
+                logging.info(stream_msg)
+                self.writer.put(json.dumps(stream_msg))
                 change.cursor.send_feedback(flush_lsn=change.data_start)
                 logging.info('Flushed LSN: {}'.format(change.data_start))
 
