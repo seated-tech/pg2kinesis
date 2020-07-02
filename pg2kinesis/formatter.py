@@ -112,7 +112,8 @@ class Formatter(object):
         for change in change_dictionary['change']:
             table_name = change['table']
             schema = change['schema']
-            if self.table_re.search(table_name):
+            if table_name == 'reservations':
+            #if self.table_re.search(table_name):
                 if self.full_change:
                     event_mapping = {
                         'insert': 'WriteRowsEvent',
