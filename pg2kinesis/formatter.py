@@ -34,6 +34,7 @@ class Formatter(object):
         self.table_pat = table_pat if table_pat is not None else r'[\w_\.]+'
         self.table_re = re.compile(self.table_pat)
         self.cur_xact = ''
+        self.tables = ["reservations", "users"]
 
         for k, v in getattr(primary_key_map, 'iteritems', primary_key_map.items)():
             # ":" added to make later look up not need to trim trailing ":".
@@ -112,7 +113,7 @@ class Formatter(object):
         for change in change_dictionary['change']:
             table_name = change['table']
             schema = change['schema']
-            if table_name == 'reservations':
+            if table_name in self.tables:
             #if self.table_re.search(table_name):
                 if self.full_change:
                     event_mapping = {
