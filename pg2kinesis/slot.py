@@ -55,7 +55,8 @@ class SlotReader(object):
         """
         Be a good citizen and try to clean up on the way out.
         """
-
+        logging.info("EXITING...")
+        logging.info(f"{exc_type}, {exc_val}, {exc_tb}")
         try:
             self._repl_cursor.close()
         except Exception:
