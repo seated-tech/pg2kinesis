@@ -136,7 +136,6 @@ class Formatter(object):
                     d["row"].pop("kind")
                     d["row"].pop("schema")
                     d["row"].pop("table")
-                    logging.info("ADDING FULL CHANGE...")
                     changes.append(FullChange(xid=self.cur_xact, change=d))
                 else:
                     try:
@@ -145,7 +144,6 @@ class Formatter(object):
                     except KeyError:
                         self._log_and_raise(MISSING_TABLE_ERR.format(full_table))
                     else:
-                        logging.info("ADDING REGULAR CHANGE...")
                         value_index = change['columnnames'].index(primary_key.col_name)
                         pkey = str(change['columnvalues'][value_index])
                         changes.append(Change(xid=self.cur_xact,
@@ -156,7 +154,7 @@ class Formatter(object):
 
     @staticmethod
     def _log_and_raise(msg):
-        logging.error(msg)
+        logging.error(msg, exc_info=True)
         raise Exception(msg)
 
     def __call__(self, change):
