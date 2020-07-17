@@ -120,7 +120,13 @@ class SlotReader(object):
     def process_replication_stream(self, consume):
         logging.info('Starting the consumption of slot "%s"!' % self.slot_name)
         if self.output_plugin == 'wal2json':
-            options = {'include-xids': 1, 'include-timestamp': 1}
+            options = {
+                'include-xids': 1,
+                'include-timestamp': 1,
+                'include-types': False,
+                'add-tables': 'public.users,public.reservations,public.aa',
+                'write-in-chunks': True
+            }
         else:
             options = None
         self._repl_cursor.start_replication(self.slot_name, options=options)

@@ -102,7 +102,7 @@ class Formatter(object):
         :param change: a message payload from postgres wal2json plugin.
         :return: A list of type Change or FullChange
         """
-
+        print(change)
         change_dictionary = json.loads(change)
         if not change_dictionary:
             return []
