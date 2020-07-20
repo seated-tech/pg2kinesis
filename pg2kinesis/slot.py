@@ -31,8 +31,8 @@ class SlotReader(object):
     ORDER BY ordinal_position;
     """
 
-    def __init__(self, database, host, port, user, pwd, sslmode, slot_name,
-                 output_plugin='test_decoding'):
+    def __init__(self, database, host, port, user, pwd, sslmode, slot_name, tables,
+                 schema="public", output_plugin='wal2json'):
         # Cool fact: using connections as context manager doesn't close them on
         # success after leaving with block
         self._db_confg = dict(database=database, host=host, port=port, user=user, password=pwd, sslmode=sslmode)
@@ -40,6 +40,8 @@ class SlotReader(object):
         self._repl_cursor = None
         self._normal_conn = None
         self.slot_name = slot_name
+        self.schema = schema
+        self.tables = tables
         self.output_plugin = output_plugin
         self.cur_lag = 0
 
@@ -69,6 +71,10 @@ class SlotReader(object):
             self._normal_conn.close()
         except Exception:
             pass
+
+    def _format_tables(self):
+        return ",".join([f"{self.schema}.{tbl}" for tbl in self.tables])
+
 
     def _get_connection(self, connection_factory=None, cursor_factory=None):
         return psycopg2.connect(connection_factory=connection_factory,
@@ -118,16 +124,18 @@ class SlotReader(object):
                 logging.info('Slot %s was not found.' % self.slot_name)
 
     def process_replication_stream(self, consume):
-        logging.info('Starting the consumption of slot "%s"!' % self.slot_name)
         if self.output_plugin == 'wal2json':
             options = {
                 'include-xids': 1,
                 'include-timestamp': 1,
                 'include-types': False,
-                'add-tables': 'public.users,public.reservations,public.aa',
                 'write-in-chunks': True
             }
+            if self.tables is not None:
+                if self.tables != "all":
+                    options['add-tables'] = self._format_tables()
         else:
             options = None
+        logging.info(f'Starting the consumption of slot {self.slot_name}, {options}')
         self._repl_cursor.start_replication(self.slot_name, options=options)
         self._repl_cursor.consume_stream(consume)
